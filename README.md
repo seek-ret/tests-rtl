@@ -1,2 +1,3 @@
-# tests-rtl
-Run-time library for Seekret tavern tests
+# Seekret API testing runtime
+
+The `seekret.apitest` package contains runtime functions and tools intended to ease API testing.
