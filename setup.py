@@ -12,7 +12,7 @@ setup(
     The `seekret.apitest` package contains runtime functions and tools intended to ease API testing.
     """,
     long_description_content_type='text/markdown',
-    package=find_namespace_packages(include=('seekret.apitest', 'seekret.apitest.*')),
+    packages=find_namespace_packages(include=('seekret.apitest', 'seekret.apitest.*')),
     install_requires=['python-box~=5.3.0'],
     classifiers=[
         "Programming Language :: Python :: 3",
