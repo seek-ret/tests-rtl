@@ -12,7 +12,7 @@ def read_readme():
 
 setup(
     name='seekret.apitest',
-    version='0.1.0',
+    version='0.1.1',
     author='Seekret Software Ltd.',
     author_email='info@seekret.com',
     description="Seekret's library for API testing runtime",
