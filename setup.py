@@ -1,4 +1,14 @@
+import os
+
 from setuptools import setup, find_namespace_packages
+
+_SCRIPT_DIR = os.path.dirname(__file__)
+
+
+def read_readme():
+    with open(os.path.join(_SCRIPT_DIR, 'README.md'), 'r') as f:
+        return f.read()
+
 
 setup(
     name='seekret.apitest',
@@ -6,11 +16,7 @@ setup(
     author='Seekret Software Ltd.',
     author_email='info@seekret.com',
     description="Seekret's library for API testing runtime",
-    long_description="""
-    # Seekret API testing runtime
-
-    The `seekret.apitest` package contains runtime functions and tools intended to ease API testing.
-    """,
+    long_description=read_readme(),
     long_description_content_type='text/markdown',
     packages=find_namespace_packages(include=('seekret.apitest', 'seekret.apitest.*')),
     install_requires=['python-box~=5.3.0'],
