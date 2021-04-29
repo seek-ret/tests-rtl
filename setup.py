@@ -19,7 +19,7 @@ setup(
     long_description=read_readme(),
     long_description_content_type='text/markdown',
     packages=find_namespace_packages(include=('seekret.apitest', 'seekret.apitest.*')),
-    install_requires=['python-box~=5.3.0'],
+    install_requires=['python-box~=5.3.0', 'requests~=2.25'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
