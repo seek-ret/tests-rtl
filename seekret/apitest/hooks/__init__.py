@@ -9,7 +9,7 @@ def pytest_tavern_beta_before_every_request(request_args: Box):
     :note: This is a hook function intended to be imported in a conftest.py file in the tavern test directory.
     """
 
-    print(f'---> Making request to {request_args.url}')
+    print(f'Outgoing request: {request_args.url}')
 
 
 def pytest_tavern_beta_after_every_response(expected, response: Response):
@@ -19,4 +19,4 @@ def pytest_tavern_beta_after_every_response(expected, response: Response):
     :note: This is a hook function intended to be imported in a conftest.py file in the tavern test directory.
     """
 
-    print(f'<--- Got response {response.status_code} from {response.url}: {response.reason}')
+    print(f'Incoming response: {response.status_code} {response.reason} from {response.url}')
