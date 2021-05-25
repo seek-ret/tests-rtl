@@ -10,7 +10,7 @@ First, install tavern and seekret.apitest: `pip install tavern seekret.apitest`
 
 Now, in order to run a test:
 
-1. Store one or more generated tavern tests from the [Seekret website](app.seekret.com) in a directory.
+1. Store one or more generated tavern tests from the [Seekret website](https://app.seekret.com) in a directory.
 2. Copy the configuration file you received from Seekret to the same directory.
 
 Your test directory should look like this:
