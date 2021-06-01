@@ -76,9 +76,13 @@ description: |
   Global configuration for running the tavern tests.
 
 variables:
-  host: http://example.com
-  user:
-    type: bearer
-    data:
-      token: <Preconfigured API token for the test user>
+  seekret:
+    v1:
+      target_server: http://example.com
+      users:
+        user:
+          auth:
+            type: bearer
+            data:
+              token: <Preconfigured API token for the test user>
 ```
