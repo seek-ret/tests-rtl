@@ -3,6 +3,8 @@ from typing import Type
 from box import Box
 
 from seekret.apitest.auth.base import AuthMethod
+from seekret.apitest.auth.bearer import BearerAuth
+from seekret.apitest.auth.headers import HeadersAuth
 
 AUTH_TYPES: dict[str, Type[AuthMethod]] = {
     method.IDENTIFIER: method for method in AuthMethod.__subclasses__() if method.IDENTIFIER is not None
