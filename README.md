@@ -48,9 +48,8 @@ stages:
           # The `add_auth_in_headers` function uses Seekret-format
           # authorization settings defined in the configuration file
           # in the "user" variable.
-          extra_kwargs:
-            auth_data: !force_format_include '{user.data}'
-            auth_type: '{user.type}'
+          extra_args:
+            - !force_format_include "{seekret-runtime.v1}"
       json:
         # Randomized body values, created during test generation.
         email: jenkinsjennifer@king.com
@@ -86,3 +85,51 @@ variables:
             data:
               token: <Preconfigured API token for the test user>
 ```
+
+## Adding authentication using a custom request
+
+To extend the authentication capabilities, Seekret allows adding an authentication stage to the test in the
+configuration file.
+
+Here's an example of a configuration file that uses custom request authentication:
+
+```yaml
+# ...
+variables:
+  seekret:
+    v1:
+      # ...
+      users:
+        user:
+          auth:
+            type: custom-request
+            data:
+              auth_stage_id: my-custom-auth-stage # Optional, defaults to "auth"
+
+stages:
+  - id: my-custom-auth-stage
+    name: My custom auth stage
+    request:
+    # ...
+    response:
+      save:
+        $ext:
+          # Saving using this extension function allows us to save values into nested objects.
+          function: seekret.apitest:dots_save
+          extra_kwargs:
+            headers:
+              # This will take the X-Auth-Token header from the response and put it in the header
+              # of future test stages.
+              seekret-runtime.v1.auth.headers.X-Auth-Token: '"X-Auth-Token"'
+```
+
+Before running a tavern test, the Seekret library will prepend the custom authentication stage to the test, so it
+executes prior to the test stages defined in the test file.
+
+The stage is in your full control, but you must save the authorization values using the `seekret.apitest:dots_save`
+extension function. The `dots_save` extension function allows saving response values into nested objects.
+
+Save values intended for use in request headers in `seekret-runtime.v1.auth.header.<Header Name>`, and values intended
+for use in request bodies in `seekret-runtime.v1.auth.json.<path-in-body>`.
+
+The values form `seekret-runtime.v1.auth` are read in every following stage and added to each request.
