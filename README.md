@@ -118,7 +118,7 @@ stages:
           extra_kwargs:
             # This will take the X-Auth-Token header from the response and put it in the header
             # of future test stages.
-            headers: '"X-Auth-Token"'
+            headers: '"X-Auth-Token"' # This is a JMESPath expression, thus the double quotes.
             type: header
             data:
               target_header: X-Auth-Token
@@ -138,12 +138,12 @@ authorization tokens so that later stages can use the authorization values.
 
 You can use the following "kwargs" to specify the wanted behaviour:
 
-| Argument Name | Description                                                                                             |
-|---------------|---------------------------------------------------------------------------------------------------------|
-| `type`        | Type of authorization method (currently supported: `header`, `bearer`).                                 |
-| `data`        | Additional data for the authorization method. See the next table for expected values.                   |
-| `headers`     | JMES path to the response header to take the authorization token from. Can't be used with `json`.       |
-| `json`        | JMES path to the authorization token in the JSON content of the response. Can't be used with `headers`. |
+| Argument Name | Description                                                                                            |
+|---------------|--------------------------------------------------------------------------------------------------------|
+| `type`        | Type of authorization method (currently supported: `header`, `bearer`).                                |
+| `data`        | Additional data for the authorization method. See the next table for expected values.                  |
+| `headers`     | JMESPath to the response header to take the authorization token from. Can't be used with `json`.       |
+| `json`        | JMESPath to the authorization token in the JSON content of the response. Can't be used with `headers`. |
 
 | `type` value | `data` fields                                                              |
 |--------------|----------------------------------------------------------------------------|
