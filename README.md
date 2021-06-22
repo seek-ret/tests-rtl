@@ -114,22 +114,76 @@ stages:
     response:
       save:
         $ext:
-          # Saving using this extension function allows us to save values into nested objects.
-          function: seekret.apitest:dots_save
+          function: seekret.apitest:save_authorization
           extra_kwargs:
-            headers:
-              # This will take the X-Auth-Token header from the response and put it in the header
-              # of future test stages.
-              seekret-runtime.v1.auth.headers.X-Auth-Token: '"X-Auth-Token"'
+            # This will take the X-Auth-Token header from the response and put it in the header
+            # of future test stages.
+            headers: '"X-Auth-Token"'
+            type: header
+            data:
+              target_header: X-Auth-Token
 ```
 
 Before running a tavern test, the Seekret library will prepend the custom authentication stage to the test, so it
 executes prior to the test stages defined in the test file.
 
-The stage is in your full control, but you must save the authorization values using the `seekret.apitest:dots_save`
-extension function. The `dots_save` extension function allows saving response values into nested objects.
+The stage is in your full control, but you must save the authorization values using
+the `seekret.apitest:save_authorization`
+extension function.
 
-Save values intended for use in request headers in `seekret-runtime.v1.auth.header.<Header Name>`, and values intended
-for use in request bodies in `seekret-runtime.v1.auth.json.<path-in-body>`.
+### `seekret.apitest:save_authorization`
 
-The values form `seekret-runtime.v1.auth` are read in every following stage and added to each request.
+`save_authorization` is a tavern extension function, intended to use in authentication requests. The function saves the
+authorization tokens so that later stages can use the authorization values.
+
+You can use the following "kwargs" to specify the wanted behaviour:
+
+| Argument Name | Description                                                                                             |
+|---------------|---------------------------------------------------------------------------------------------------------|
+| `type`        | Type of authorization method (currently supported: `header`, `bearer`).                                 |
+| `data`        | Additional data for the authorization method. See the next table for expected values.                   |
+| `headers`     | JMES path to the response header to take the authorization token from. Can't be used with `json`.       |
+| `json`        | JMES path to the authorization token in the JSON content of the response. Can't be used with `headers`. |
+
+| `type` value | `data` fields                                                              |
+|--------------|----------------------------------------------------------------------------|
+| `header`     | `target_header` - the name of the header to set to the authorization token |
+| `bearer`     | N/A                                                                        |
+
+### Example: Login with credentials and get bearer token
+
+This example describes the authorization stage of a login requests that generates a bearer token.
+
+```yaml
+variables:
+  seekret:
+    v1:
+      target_server: http://example.com
+      users:
+        user:
+          auth:
+            type: custom-request
+            data:
+              auth_stage_id: login
+              username: Seekret
+              password: isAwesome!
+
+stages:
+  - id: login
+    name: Login
+    request:
+      method: POST
+      url: /login
+      json:
+        username: '{seekret.v1.users.auth.data.username}'
+        password: '{seekret.v1.users.auth.data.password}'
+    response:
+      status_code:
+        - 201
+      save:
+        $ext:
+          function: seekret.apitest:save_authorization
+          extra_kwargs:
+            json: data.token
+            type: bearer
+```

@@ -4,6 +4,7 @@ from seekret.apitest.auth.base import AuthMethod
 from seekret.apitest.auth.bearer import BearerAuth
 from seekret.apitest.auth.custom_request import CustomRequestAuth
 from seekret.apitest.auth.headers import HeadersAuth
+from seekret.apitest.auth.saveutil import save_authorization
 
 AUTH_METHODS: dict[str, AuthMethod] = {
     method.IDENTIFIER: method()
