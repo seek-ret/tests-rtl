@@ -148,7 +148,7 @@ You can use the following "kwargs" to specify the wanted behaviour:
 | `type` value | `data` fields                                                              |
 |--------------|----------------------------------------------------------------------------|
 | `header`     | `target_header` - the name of the header to set to the authorization token |
-| `bearer`     | N/A                                                                        |
+| `bearer`     | Not applicable for `bearer` authorization                                  |
 
 ### Example: Login with credentials and get bearer token
 

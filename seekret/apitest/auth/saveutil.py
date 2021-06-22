@@ -12,21 +12,12 @@ class AuthType(Enum):
 
 
 def _save_auth_header(value, name='Authorization'):
-    return {
-        'seekret-runtime': {
-            'v1': {
-                'auth': {
-                    'headers': {
-                        name: value
-                    }
-                }
-            }
-        }
-    }
+    return {'seekret-runtime': {'v1': {'auth': {'headers': {name: value}}}}}
 
 
 def _save_header(value, data: dict):
-    return _save_auth_header(value, name=data.get('target_header', 'Authorization'))
+    return _save_auth_header(value,
+                             name=data.get('target_header', 'Authorization'))
 
 
 def _save_bearer(value, _data):
@@ -39,7 +30,10 @@ _HANDLERS: dict[AuthType, Callable[[Any, dict], dict]] = {
 }
 
 
-def save_authorization(response: requests.Response, *, type: AuthType, data: Optional[Any] = None,
+def save_authorization(response: requests.Response,
+                       *,
+                       type: AuthType,
+                       data: Optional[Any] = None,
                        json: Optional[str] = None,
                        headers: Optional[str] = None):
     """
@@ -62,9 +56,11 @@ def save_authorization(response: requests.Response, *, type: AuthType, data: Opt
                     json: data.token  # JMES path to the token.
     """
 
-    if (not headers and json is None) or (headers and json is not None):
+    has_json = json is not None
+    if (headers and has_json) or (not headers and not has_json):
         raise ValueError(
-            '"seekret.apitest:save_authorization" requires either a "json" field or a "headers" field')
+            '"seekret.apitest:save_authorization" requires either a "json" field or a "headers" field'
+        )
 
     if json:
         value = recurse_access_key(response.json(), json)
@@ -75,6 +71,8 @@ def save_authorization(response: requests.Response, *, type: AuthType, data: Opt
     try:
         handler = _HANDLERS[AuthType(type)]
     except (KeyError, ValueError):
-        raise ValueError(f'invalid auth type {type!r} for "seekret.apitest:save_authorization"')
+        raise ValueError(
+            f'invalid auth type {type!r} for "seekret.apitest:save_authorization"'
+        )
 
     return handler(value, data)

@@ -27,20 +27,6 @@ def pytest_tavern_beta_after_every_response(expected, response: Response):
     print(f'Incoming response: {response.content} from {response.url}')
 
 
-def _assign_dict(target: dict, new_value: dict):
-    """
-    Assign the target dictionary to the new value.
-
-    >>> d = {'a': '1'}
-    >>> _assign_dict(d, {'b': '2'})
-    >>> d
-    >>> # {'b': '2'}
-    """
-
-    target.clear()
-    target.update(new_value)
-
-
 def pytest_tavern_beta_before_every_test_run(test_dict: dict, variables: dict):
     """
     Allow the auth method to modify the test data and variables.
@@ -54,5 +40,5 @@ def pytest_tavern_beta_before_every_test_run(test_dict: dict, variables: dict):
 
     call_on_test_start(test_box, variables_box, auth_type, auth_data)
 
-    _assign_dict(test_dict, test_box.to_dict())
-    _assign_dict(variables, variables_box.to_dict())
+    test_dict.update(test_box.to_dict())
+    variables.update(variables_box.to_dict())
