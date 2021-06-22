@@ -48,9 +48,8 @@ stages:
           # The `add_auth_in_headers` function uses Seekret-format
           # authorization settings defined in the configuration file
           # in the "user" variable.
-          extra_kwargs:
-            auth_data: !force_format_include '{user.data}'
-            auth_type: '{user.type}'
+          extra_args:
+            - !force_format_include "{seekret-runtime.v1}"
       json:
         # Randomized body values, created during test generation.
         email: jenkinsjennifer@king.com
@@ -85,4 +84,106 @@ variables:
             type: bearer
             data:
               token: <Preconfigured API token for the test user>
+```
+
+## Adding authentication using a custom request
+
+To extend the authentication capabilities, Seekret allows adding an authentication stage to the test in the
+configuration file.
+
+Here's an example of a configuration file that uses custom request authentication:
+
+```yaml
+# ...
+variables:
+  seekret:
+    v1:
+      # ...
+      users:
+        user:
+          auth:
+            type: custom-request
+            data:
+              auth_stage_id: my-custom-auth-stage # Optional, defaults to "auth"
+
+stages:
+  - id: my-custom-auth-stage
+    name: My custom auth stage
+    request:
+    # ...
+    response:
+      save:
+        $ext:
+          function: seekret.apitest:save_authorization
+          extra_kwargs:
+            # This will take the X-Auth-Token header from the response and put it in the header
+            # of future test stages.
+            headers: '"X-Auth-Token"' # This is a JMESPath expression, thus the quoting.
+            type: header
+            data:
+              target_header: X-Auth-Token
+```
+
+Before running a tavern test, the Seekret library will prepend the custom authentication stage to the test, so it
+executes prior to the test stages defined in the test file.
+
+The stage is in your full control, but you must save the authorization values using
+the `seekret.apitest:save_authorization`
+extension function.
+
+### `seekret.apitest:save_authorization`
+
+`save_authorization` is a tavern extension function, intended to use in authentication requests. The function saves the
+authorization tokens so that later stages can use the authorization values.
+
+You can use the following "kwargs" to specify the wanted behaviour:
+
+| Argument Name | Description                                                                                            |
+|---------------|--------------------------------------------------------------------------------------------------------|
+| `type`        | Type of authorization method (currently supported: `header`, `bearer`).                                |
+| `data`        | Additional data for the authorization method. See the next table for expected values.                  |
+| `headers`     | JMESPath to the response header to take the authorization token from. Can't be used with `json`.       |
+| `json`        | JMESPath to the authorization token in the JSON content of the response. Can't be used with `headers`. |
+
+| `type` value | `data` fields                                                              |
+|--------------|----------------------------------------------------------------------------|
+| `header`     | `target_header` - the name of the header to set to the authorization token |
+| `bearer`     | Not applicable for `bearer` authorization                                  |
+
+### Example: Login with credentials and get bearer token
+
+This example describes the authorization stage of a login requests that generates a bearer token.
+
+```yaml
+variables:
+  seekret:
+    v1:
+      target_server: http://example.com
+      users:
+        user:
+          auth:
+            type: custom-request
+            data:
+              auth_stage_id: login
+              username: Seekret
+              password: isAwesome!
+
+stages:
+  - id: login
+    name: Login
+    request:
+      method: POST
+      url: /login
+      json:
+        username: '{seekret.v1.users.auth.data.username}'
+        password: '{seekret.v1.users.auth.data.password}'
+    response:
+      status_code:
+        - 201
+      save:
+        $ext:
+          function: seekret.apitest:save_authorization
+          extra_kwargs:
+            json: data.token
+            type: bearer
 ```

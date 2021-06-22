@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 
 from box import Box
 
@@ -11,8 +11,6 @@ class AuthMethod(ABC):
     """
     IDENTIFIER = None
 
-    def __init__(self, auth_data: Box):
-        self.auth_data = auth_data
-
-    def add_headers(self) -> Box:
-        return Box()
+    @abstractmethod
+    def on_test_start(self, test_data: Box, variables: Box, auth_data: Box):
+        raise NotImplementedError()
