@@ -118,7 +118,7 @@ stages:
           extra_kwargs:
             # This will take the X-Auth-Token header from the response and put it in the header
             # of future test stages.
-            headers: '"X-Auth-Token"' # This is a JMESPath expression, thus the double quotes.
+            headers: '"X-Auth-Token"' # This is a JMESPath expression, thus the quoting.
             type: header
             data:
               target_header: X-Auth-Token
