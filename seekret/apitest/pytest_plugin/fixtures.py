@@ -1,6 +1,7 @@
 import pytest
 
 from seekret.apitest.context import Context
+from seekret.apitest.context.session import Session
 from seekret.apitest.runprofile import RunProfile
 
 
@@ -13,13 +14,20 @@ def _seekret_run_profile(pytestconfig) -> RunProfile:
 
 
 @pytest.fixture(scope='session')
-def seekret(_seekret_run_profile, pytestconfig) -> Context:
+def seekret_session(_seekret_run_profile, pytestconfig) -> Session:
+    """
+    Seekret test session object.
+    """
+
+    session = Session(_seekret_run_profile)
+    pytestconfig.hook.pytest_seekret_session_initialized(session=session)
+    return session
+
+
+@pytest.fixture
+def seekret(seekret_session, pytestconfig) -> Context:
     """
     Seekret context and functions.
     """
 
-    context = Context(_seekret_run_profile)
-
-    pytestconfig.hook.pytest_seekret_context_initialized(context=context)
-
-    return context
+    return Context(session=seekret_session)
