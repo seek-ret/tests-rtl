@@ -1,20 +1,16 @@
-from box import Box
+from typing import Any
 
-from seekret.apitest.auth.base import AuthMethod
+from requests import PreparedRequest
+from requests.auth import AuthBase
+
+from seekret.apitest.auth.factory import auth_method_factory
 
 
-class BearerAuth(AuthMethod):
-    IDENTIFIER = 'bearer'
+@auth_method_factory(type_name='bearer')
+class BearerAuth(AuthBase):
+    def __init__(self, data: dict[str, Any]):
+        self.token = data['token']
 
-    def on_test_start(self, test_data: Box, variables: Box, auth_data: Box):
-        variables.merge_update({
-            'seekret-runtime': {
-                'v1': {
-                    'auth': {
-                        'headers': {
-                            'Authorization': f'Bearer {auth_data.token}'
-                        }
-                    }
-                }
-            }
-        })
+    def __call__(self, request: PreparedRequest) -> PreparedRequest:
+        request.headers['Authorization'] = f'Bearer {self.token}'
+        return request
