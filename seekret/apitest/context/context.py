@@ -1,4 +1,6 @@
 import contextlib
+import re
+import urllib.parse
 from typing import Any, Optional
 
 import requests
@@ -7,6 +9,8 @@ from requests.structures import CaseInsensitiveDict
 from seekret.apitest.auth import create_auth
 from seekret.apitest.context.response import ResponseWrapper
 from seekret.apitest.runprofile import RunProfile
+
+PATH_PARAMETER_PLACEHOLDER_PATTERN = re.compile(r'{(?P<placeholder>[^{}]+)}')
 
 
 def resolve_path_params(path: str, path_params: dict[str, Any]):
@@ -22,15 +26,20 @@ def resolve_path_params(path: str, path_params: dict[str, Any]):
     :param path: Path to resolve the path parameters in.
     :param path_params: Dictionary mapping parameter names to their values.
 
-    :note: Path parameter placeholders that do not appear in the mapping will remain as placeholders.
-    :note: Parmaeter names in the mapping that do not appear in the path are ignored.
+    :raises ValueError: A path parameter placeholder does not have a value in the given dictionary.
+    :raises ValueError: Some keys of the given path parameters do not appear as placeholders in the path.
     """
 
-    if path_params:
-        for param_name, value in path_params.items():
-            path = path.replace('{' + param_name + '}', value)
+    try:
+        resolved = PATH_PARAMETER_PLACEHOLDER_PATTERN.sub(lambda m: path_params.pop(m.group('placeholder')), path)
+    except KeyError as e:
+        raise ValueError(f'expected path param {e} was not given') from e
 
-    return path
+    # Because the substitute uses `pop`, all of the remaining path params were not used.
+    if path_params:
+        raise ValueError(f'path params given but do not appear in path: {", ".join(path_params.keys())}')
+
+    return resolved
 
 
 class Context(object):
@@ -40,6 +49,7 @@ class Context(object):
     This class is the interface from the test function to the Seekret testing infrastructure. It is intended to be used
     as a fixture and returned from the `seekret` fixture.
     """
+
     def __init__(self, run_profile: RunProfile):
         self.run_profile = run_profile
 
@@ -100,12 +110,12 @@ class Context(object):
         """
 
         path = resolve_path_params(path, path_params)
+
+        # Strip "/" at the start of the path to avoid "//" replacing the host part.
+        url = urllib.parse.urljoin(self.run_profile.target_server, path.lstrip('/'))
         return ResponseWrapper(
             requests.request(method=method,
-                             url='/'.join([
-                                 self.run_profile.target_server,
-                                 path.lstrip('/')
-                             ]),
+                             url=url,
                              headers=headers,
                              json=json,
                              params=query,

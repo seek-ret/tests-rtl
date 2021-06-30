@@ -6,7 +6,7 @@ from requests.auth import AuthBase
 from seekret.apitest.auth.factory import auth_method_factory
 
 
-@auth_method_factory(type_name='headers')
+@auth_method_factory(type_name='header')
 class HeadersAuth(AuthBase):
     def __init__(self, data: dict[str, Any]):
         self.headers = data
