@@ -1,4 +1,7 @@
+import io
+
 import jmespath
+import pykwalify.core
 import requests
 
 
@@ -36,3 +39,12 @@ class ResponseWrapper(object):
             'json': self.json(),
             'headers': self.headers
         })
+
+    def assert_schema(self, schema):
+        try:
+            pykwalify.core.Core(
+                source_data=self.json(),
+                schema_file_obj=io.StringIO(schema)).validate()
+        except pykwalify.core.SchemaError as e:
+            raise AssertionError(
+                f'response schema verification error: {e.msg}') from e

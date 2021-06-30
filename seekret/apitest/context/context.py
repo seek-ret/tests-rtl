@@ -31,13 +31,16 @@ def resolve_path_params(path: str, path_params: dict[str, Any]):
     """
 
     try:
-        resolved = PATH_PARAMETER_PLACEHOLDER_PATTERN.sub(lambda m: path_params.pop(m.group('placeholder')), path)
+        resolved = PATH_PARAMETER_PLACEHOLDER_PATTERN.sub(
+            lambda m: path_params.pop(m.group('placeholder')), path)
     except KeyError as e:
         raise ValueError(f'expected path param {e} was not given') from e
 
     # Because the substitute uses `pop`, all of the remaining path params were not used.
     if path_params:
-        raise ValueError(f'path params given but do not appear in path: {", ".join(path_params.keys())}')
+        raise ValueError(
+            f'path params given but do not appear in path: {", ".join(path_params.keys())}'
+        )
 
     return resolved
 
@@ -49,7 +52,6 @@ class Context(object):
     This class is the interface from the test function to the Seekret testing infrastructure. It is intended to be used
     as a fixture and returned from the `seekret` fixture.
     """
-
     def __init__(self, run_profile: RunProfile):
         self.run_profile = run_profile
 
@@ -112,7 +114,8 @@ class Context(object):
         path = resolve_path_params(path, path_params)
 
         # Strip "/" at the start of the path to avoid "//" replacing the host part.
-        url = urllib.parse.urljoin(self.run_profile.target_server, path.lstrip('/'))
+        url = urllib.parse.urljoin(self.run_profile.target_server,
+                                   path.lstrip('/'))
         return ResponseWrapper(
             requests.request(method=method,
                              url=url,
