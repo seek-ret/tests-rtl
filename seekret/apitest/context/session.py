@@ -1,4 +1,3 @@
-import logging
 import re
 import urllib.parse
 from typing import Optional, Any
@@ -9,8 +8,6 @@ from requests.structures import CaseInsensitiveDict
 from seekret.apitest.auth import create_auth
 from seekret.apitest.context.response import ResponseWrapper
 from seekret.apitest.runprofile import RunProfile
-
-logger = logging.getLogger(__name__)
 
 PATH_PARAMETER_PLACEHOLDER_PATTERN = re.compile(r'{(?P<placeholder>[^{}]+)}')
 
@@ -103,15 +100,15 @@ class Session(object):
                                             cookies=cookies,
                                             auth=user and self._auth_handler(user)).prepare()
 
-        logger.info(f'--> {method} {prepared_request.url}')
-        logger.debug(f'     headers: {prepared_request.headers}')
-        logger.debug(f'     json: {json}')
+        print(f'--> {method} {prepared_request.url}')
+        print(f'     headers: {prepared_request.headers}')
+        print(f'     json: {json}')
 
         with requests.Session() as session:
             response = session.send(prepared_request)
 
-        logger.info(f'<-- {method} {response.url}: {response.status_code} {response.reason}')
-        logger.debug(f'     headers: {response.headers}')
-        logger.debug(f'     body: {response.text}')
+        print(f'<-- {response.status_code} {response.reason} from {method} {response.url}')
+        print(f'     headers: {response.headers}')
+        print(f'     body: {response.text}')
 
         return ResponseWrapper(response)
