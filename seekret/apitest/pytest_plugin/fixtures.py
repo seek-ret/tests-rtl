@@ -1,4 +1,5 @@
 import pytest
+from _pytest.mark import Mark
 
 from seekret.apitest.context import Context
 from seekret.apitest.context.session import Session
@@ -25,9 +26,15 @@ def seekret_session(_seekret_run_profile, pytestconfig) -> Session:
 
 
 @pytest.fixture
-def seekret(seekret_session, pytestconfig) -> Context:
+def seekret(seekret_session, pytestconfig, request) -> Context:
     """
     Seekret context and functions.
     """
 
-    return Context(session=seekret_session)
+    context = Context(session=seekret_session)
+
+    default_user: Mark = request.node.get_closest_marker('default_user')
+    if default_user is not None:
+        context.default_user = default_user.args[0]
+
+    return context

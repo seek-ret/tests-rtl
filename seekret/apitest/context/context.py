@@ -1,10 +1,13 @@
 import contextlib
 import logging
-from typing import Any, Optional
+from typing import Any, Optional, Union, NewType, cast
 
 from seekret.apitest.context.session import Session
 
 logger = logging.getLogger(__name__)
+
+_NotSet = NewType("_NotSet", object)
+NOT_SET = cast(_NotSet, object())
 
 
 class Context(object):
@@ -19,6 +22,7 @@ class Context(object):
         self.session = session
 
         self._current_stage_index = 1  # 1-based.
+        self.default_user = 'user'
 
     @contextlib.contextmanager
     def stage(self, method: str, path: str):
@@ -38,8 +42,8 @@ class Context(object):
         finally:
             self._current_stage_index += 1
 
-    def request(self, *args, user: Optional[str] = 'user', **kwargs):
-        return self.session.request(*args, user=user, **kwargs)
+    def request(self, *args, user: Optional[Union[str, _NotSet]] = NOT_SET, **kwargs):
+        return self.session.request(*args, user=(self.default_user if user is NOT_SET else user), **kwargs)
 
 
 class _StageWrapper(object):
