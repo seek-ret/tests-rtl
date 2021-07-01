@@ -19,7 +19,7 @@ setup(name='seekret.apitest',
       long_description_content_type='text/markdown',
       packages=find_namespace_packages(include=('seekret.apitest',
                                                 'seekret.apitest.*')),
-      install_requires=['requests~=2', 'PyYAML~=5', 'jmespath', 'pytest~=6', "pykwalify~=1.8"],
+      install_requires=['requests>=2,<3', 'PyYAML>=5,<6', 'jmespath', 'pytest>=6,<7', "pykwalify~=1.8"],
       classifiers=[
           "Programming Language :: Python :: 3",
           "License :: OSI Approved :: MIT License",
