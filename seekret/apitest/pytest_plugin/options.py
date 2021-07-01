@@ -8,8 +8,9 @@ def pytest_addoption(parser: Parser, pluginmanager):
 
     _ = pluginmanager  # Unused.
 
-    parser.addoption('--run-profile',
-                     dest='run_profile',
-                     type=str,
-                     default=None,
-                     help='Run profile YAML file to use for the test session')
+    group = parser.getgroup('seekret')
+    group.addoption('--run-profile',
+                    dest='run_profile',
+                    type=str,
+                    default=None,
+                    help='Run profile YAML file to use for the test session')
