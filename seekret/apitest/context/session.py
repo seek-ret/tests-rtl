@@ -108,15 +108,26 @@ class Session(object):
                                             cookies=cookies,
                                             auth=user and self._auth_handler(user)).prepare()
 
+        def _prettify(v):
+            if isinstance(v, CaseInsensitiveDict):
+                v = dict(v.items())  # Use `v.items()` to preserve case.
+
+            indentation = ' ' * 6  # Match indentation of titles.
+            return indentation.join(json.dumps(v, indent=2).splitlines(keepends=True))
+
         _log_and_print(logging.INFO, f'--> {method} {prepared_request.url}')
-        print(f'     headers: {prepared_request.headers}')
-        print(f'     json: {json}')
+        print(f'      headers: {_prettify(prepared_request.headers)}')
+        print(f'      json: {_prettify(json)}')
 
         with requests.Session() as session:
             response = session.send(prepared_request)
 
         _log_and_print(logging.INFO, f'<-- {response.status_code} {response.reason} from {method} {response.url}')
-        print(f'     headers: {response.headers}')
-        print(f'     body: {response.text}')
+        print(f'      headers: {_prettify(response.headers)}')
+        try:
+            body = _prettify(response.json())
+        except ValueError:
+            body = response.text
+        print(f'      body: {body}')
 
         return ResponseWrapper(response)
