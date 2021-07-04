@@ -1,3 +1,4 @@
+import logging
 import re
 import urllib.parse
 from typing import Optional, Any
@@ -10,6 +11,13 @@ from seekret.apitest.context.response import ResponseWrapper
 from seekret.apitest.runprofile import RunProfile
 
 PATH_PARAMETER_PLACEHOLDER_PATTERN = re.compile(r'{(?P<placeholder>[^{}]+)}')
+
+logger = logging.getLogger(__name__)
+
+
+def _log_and_print(level: int, message: str):
+    logger.log(level, message)
+    print(message)
 
 
 def resolve_path_params(path: str, path_params: dict[str, Any]):
@@ -100,14 +108,14 @@ class Session(object):
                                             cookies=cookies,
                                             auth=user and self._auth_handler(user)).prepare()
 
-        print(f'--> {method} {prepared_request.url}')
+        _log_and_print(logging.INFO, f'--> {method} {prepared_request.url}')
         print(f'     headers: {prepared_request.headers}')
         print(f'     json: {json}')
 
         with requests.Session() as session:
             response = session.send(prepared_request)
 
-        print(f'<-- {response.status_code} {response.reason} from {method} {response.url}')
+        _log_and_print(logging.INFO, f'<-- {response.status_code} {response.reason} from {method} {response.url}')
         print(f'     headers: {response.headers}')
         print(f'     body: {response.text}')
 
