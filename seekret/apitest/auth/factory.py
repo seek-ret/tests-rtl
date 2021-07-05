@@ -51,7 +51,7 @@ def create_auth(auth_type: str, auth_data: dict[str, Any]):
 
     try:
         method = _SUPPORTED_AUTH_METHODS[auth_type]
-    except KeyError:
-        raise ValueError(f'unsupported auth type "{auth_type}"')
+    except KeyError as e:
+        raise ValueError(f'unsupported auth type "{auth_type}"') from e
 
     return method(auth_data)
