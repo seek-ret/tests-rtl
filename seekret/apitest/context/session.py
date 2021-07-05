@@ -10,7 +10,7 @@ from seekret.apitest.auth import create_auth
 from seekret.apitest.context.response import ResponseWrapper
 from seekret.apitest.runprofile import RunProfile
 
-PATH_PARAMETER_PLACEHOLDER_PATTERN = re.compile(r'{(?P<placeholder>[^{}]+)}')
+PATH_PARAMETER_PLACEHOLDER_PATTERN = re.compile(r'{(?P<param_name>[^{}]+)}')
 
 logger = logging.getLogger(__name__)
 
@@ -37,14 +37,23 @@ def resolve_path_params(path: str, path_params: dict[str, Any]):
     :raises ValueError: Some keys of the given path parameters do not appear as placeholders in the path.
     """
 
+    consumed_params = set()
+
+    def substitute_handler(match: re.Match):
+        param_name = match.group('param_name')
+        consumed_params.add(param_name)
+
+        # safe defaults to the "/" character, which we need to escape.
+        return urllib.parse.quote(str(path_params[param_name]), safe='')
+
     try:
-        resolved = PATH_PARAMETER_PLACEHOLDER_PATTERN.sub(lambda m: path_params.pop(m.group('placeholder')), path)
+        resolved = PATH_PARAMETER_PLACEHOLDER_PATTERN.sub(substitute_handler, path)
     except KeyError as e:
         raise ValueError(f'expected path param {e} was not given') from e
 
-    # Because the substitute uses `pop`, all of the remaining path params were not used.
-    if path_params:
-        raise ValueError(f'path params given but do not appear in path: {", ".join(path_params.keys())}')
+    unused_params = path_params.keys() - consumed_params
+    if unused_params:
+        raise ValueError(f'path params given but do not appear in path: {", ".join(unused_params)}')
 
     return resolved
 
