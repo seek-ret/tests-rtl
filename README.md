@@ -7,9 +7,9 @@ common functionalities.
 
 ## Quickstart
 
-First, install seekret.apitest::
+First, install `seekret.apitest`::
 
-    pip install tavern seekret.apitest
+    pip install seekret.apitest
 
 Now, in order to run a test:
 
@@ -35,8 +35,8 @@ test.
 
 ## Run profile
 
-Each test run requires a run profile. By default, Seekret takes reads the run profile from the `run-profile.yaml` file
-in the root directory, but you can provide a different run profile by specifying the `--run-profile` flag.
+Each test run requires a run profile. By default, Seekret reads the run profile from the `run-profile.yaml` file in the
+root directory, but you can provide a different run profile by specifying the `--run-profile` flag.
 
 The run profile sets:
 
@@ -76,7 +76,7 @@ def test_post_channels_post_messages(seekret: seekret.apitest.Context):
     # Stage 1: POST /api/channels
     with seekret.stage(method='POST', path='/api/channels') as request:
         response = request(json={
-            'name': 'fuGfYxcrgCSsVBMLlceEpLrGPT'
+            'name': '<random name>'
         })
         assert response.status_code == 201
 
@@ -85,7 +85,7 @@ def test_post_channels_post_messages(seekret: seekret.apitest.Context):
     # Stage 2: POST /api/channels/{channel_id}/messages
     with seekret.stage(method='POST', path='/api/channels/{channel_id}/messages') as request:
         response = request(json={
-            'message': 'YdKQyxQAVPenmYCQghMhtctDywXWXOrZJDakCrQYoIa'
+            'message': '<random message>'
         }, path_params={
             'channel_id': carry_0_responseBody_data_channel_id
         })
@@ -132,7 +132,7 @@ def channel(seekret: seekret.apitest.Context):
     # Setup stage: happens before the test.
     with seekret.stage(method='POST', path='/api/channels') as request:
         response = request(json={
-            'name': 'fuGfYxcrgCSsVBMLlceEpLrGPT'
+            'name': 'Test Channel'
         })
         assert response.status_code == 201
 
@@ -152,5 +152,6 @@ def channel(seekret: seekret.apitest.Context):
 
 def test_post_messages_delete_messages(seekret: seekret.apitest.Context, channel):
     # The 'channel' parameter has the value yielded from the 'channel' fixture.
+    # In this instance, 'channel' will be the ID of the created channel.
     ...
 ```
