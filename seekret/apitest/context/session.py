@@ -10,9 +10,14 @@ from seekret.apitest.auth import create_auth
 from seekret.apitest.context.response import ResponseWrapper
 from seekret.apitest.runprofile import RunProfile
 
+PATH_PARAMETER_PLACEHOLDER_PATTERN = re.compile(r'{(?P<placeholder>[^{}]+)}')
+
 logger = logging.getLogger(__name__)
 
-PATH_PARAMETER_PLACEHOLDER_PATTERN = re.compile(r'{(?P<placeholder>[^{}]+)}')
+
+def _log_and_print(level: int, message: str):
+    logger.log(level, message)
+    print(message)
 
 
 def resolve_path_params(path: str, path_params: dict[str, Any]):
@@ -103,15 +108,26 @@ class Session(object):
                                             cookies=cookies,
                                             auth=user and self._auth_handler(user)).prepare()
 
-        logger.info(f'--> {method} {prepared_request.url}')
-        logger.debug(f'     headers: {prepared_request.headers}')
-        logger.debug(f'     json: {json}')
+        def _prettify(v):
+            if isinstance(v, CaseInsensitiveDict):
+                v = dict(v.items())  # Use `v.items()` to preserve case.
+
+            indentation = ' ' * 6  # Match indentation of titles.
+            return indentation.join(json.dumps(v, indent=2).splitlines(keepends=True))
+
+        _log_and_print(logging.INFO, f'--> {method} {prepared_request.url}')
+        print(f'      headers: {_prettify(prepared_request.headers)}')
+        print(f'      json: {_prettify(json)}')
 
         with requests.Session() as session:
             response = session.send(prepared_request)
 
-        logger.info(f'<-- {method} {response.url}: {response.status_code} {response.reason}')
-        logger.debug(f'     headers: {response.headers}')
-        logger.debug(f'     body: {response.text}')
+        _log_and_print(logging.INFO, f'<-- {response.status_code} {response.reason} from {method} {response.url}')
+        print(f'      headers: {_prettify(response.headers)}')
+        try:
+            body = _prettify(response.json())
+        except ValueError:
+            body = response.text
+        print(f'      body: {body}')
 
         return ResponseWrapper(response)
