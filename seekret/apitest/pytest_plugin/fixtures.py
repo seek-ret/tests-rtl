@@ -26,7 +26,7 @@ def seekret_session(_seekret_run_profile, pytestconfig) -> Session:
 @pytest.fixture(scope='module')
 def seekret_module(seekret_session) -> ModuleContext:
     """
-    Seekret test session object.
+    Seekret test module object.
     """
 
     return ModuleContext(session=seekret_session)

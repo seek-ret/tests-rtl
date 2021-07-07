@@ -11,8 +11,8 @@ class ModuleContext(object):
     """
     Seekret context for module scoped functions.
 
-    This class is the interface from the test function to the Seekret testing infrastructure. It is intended to be used
-    as a fixture and returned from the `seekret_module` fixture.
+    This class is the interface from module-scoped fixtures to the Seekret testing infrastructure. It is intended to be
+    used as a fixture and returned from the `seekret_module` fixture.
     """
 
     def __init__(self, session: Session):
