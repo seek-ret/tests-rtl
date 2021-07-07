@@ -3,6 +3,7 @@ import re
 import urllib.parse
 from typing import Optional, Any
 
+import json as _json
 import requests
 from requests.structures import CaseInsensitiveDict
 
@@ -122,7 +123,7 @@ class Session(object):
                 v = dict(v.items())  # Use `v.items()` to preserve case.
 
             indentation = ' ' * 6  # Match indentation of titles.
-            return indentation.join(json.dumps(v, indent=2).splitlines(keepends=True))
+            return indentation.join(_json.dumps(v, indent=2).splitlines(keepends=True))
 
         _log_and_print(logging.INFO, f'--> {method} {prepared_request.url}')
         print(f'      headers: {_prettify(prepared_request.headers)}')
