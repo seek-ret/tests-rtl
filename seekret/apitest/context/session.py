@@ -2,6 +2,7 @@ import json as _json
 import logging
 import re
 import urllib.parse
+from collections.abc import Mapping
 from typing import Optional, Any
 
 import requests
@@ -89,7 +90,7 @@ class Session(object):
                 *,
                 path_params: Optional[dict[str, Any]] = None,
                 query: Optional[dict[str, Any]] = None,
-                headers: Optional[CaseInsensitiveDict[str, Any]] = None,
+                headers: Optional[Mapping[str, Any]] = None,
                 cookies: Optional[dict[str, Any]] = None,
                 user: Optional[str] = None):
         """
@@ -108,20 +109,8 @@ class Session(object):
         :return: Wrapped response object.
         """
 
-        path = resolve_path_params(path, path_params)
-
-        # Strip "/" at the start of the path to avoid "//" replacing the host part.
-        url = urllib.parse.urljoin(self.run_profile.target_server,
-                                   path.lstrip('/'))
-
-        prepared_request = requests.Request(
-            method=method,
-            url=url,
-            headers=headers,
-            json=json,
-            params=query,
-            cookies=cookies,
-            auth=user and self._auth_handler(user)).prepare()
+        prepared_request = self._prepare_request(method, path, json=json, path_params=path_params, query=query,
+                                                 headers=headers, cookies=cookies, user=user)
 
         def _prettify(v):
             if isinstance(v, CaseInsensitiveDict):
@@ -150,3 +139,25 @@ class Session(object):
         print(f'      body: {body}')
 
         return ResponseWrapper(response)
+
+    def _prepare_request(self,
+                         method: str,
+                         path: str,
+                         json: Optional[Any] = None,
+                         *,
+                         path_params: Optional[dict[str, Any]] = None,
+                         query: Optional[dict[str, Any]] = None,
+                         headers: Optional[Mapping[str, Any]] = None,
+                         cookies: Optional[dict[str, Any]] = None,
+                         user: Optional[str] = None):
+        path = resolve_path_params(path, path_params or {})
+        # Strip "/" at the start of the path to avoid "//" replacing the host part.
+        url = urllib.parse.urljoin(self.run_profile.target_server,
+                                   path.lstrip('/'))
+        return requests.Request(method=method,
+                                url=url,
+                                headers=headers,
+                                json=json,
+                                params=query,
+                                cookies=cookies,
+                                auth=user and self._auth_handler(user)).prepare()
