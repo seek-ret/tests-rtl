@@ -155,3 +155,26 @@ def test_post_messages_delete_messages(seekret: seekret.apitest.Context, channel
     # In this instance, 'channel' will be the ID of the created channel.
     ...
 ```
+
+### Default user for test
+
+By default, `request` calls will use the `default` user if another user wasn't provided. You can set the default user
+using the `default_user` field of the `seekret` value.
+
+Seekret provides the `default_user` test mark in order to specify a different default user for a specific test.
+
+```python
+import pytest
+import seekret.apitest
+
+
+@pytest.mark.default_user('non-admin')
+def test_create_user(seekret: seekret.apitest.Context):
+    with seekret.stage(method='POST', path='/api/users') as request:
+        # Sends the request with the authorization data of the 'non-admin' user.
+        response = request(json={
+            'user_name': '<random name>',
+            'password': '<random password>'
+        })
+        assert response.status_code == 403
+```
