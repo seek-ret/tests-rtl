@@ -25,13 +25,22 @@ def seekret_session(_seekret_run_profile, pytestconfig) -> Session:
     return session
 
 
+@pytest.fixture(scope='module')
+def seekret_module(seekret_session, request) -> Context:
+    """
+    Seekret test module object.
+    """
+
+    return Context(session=seekret_session, scope=request.scope)
+
+
 @pytest.fixture
-def seekret(seekret_session, pytestconfig, request) -> Context:
+def seekret(seekret_session, request) -> Context:
     """
     Seekret context and functions.
     """
 
-    context = Context(session=seekret_session)
+    context = Context(session=seekret_session, scope=request.scope)
 
     default_user: Mark = request.node.get_closest_marker('default_user')
     if default_user is not None:

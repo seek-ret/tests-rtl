@@ -4,6 +4,5 @@ from seekret.apitest.pytest_plugin import seekret
 from seekret.apitest.runprofile import RunProfile
 
 __all__ = [
-    'Context', 'seekret', 'auth_method_factory', 'RunProfile',
-    'register_auth_method_factory'
+    'Context', 'seekret', 'auth_method_factory', 'RunProfile', 'register_auth_method_factory'
 ]

@@ -4,7 +4,7 @@ by the `seekret.apitest` pytest plugin.
 """
 from _pytest.config import Config
 
-from seekret.apitest.pytest_plugin.fixtures import seekret, _seekret_run_profile, seekret_session
+from seekret.apitest.pytest_plugin.fixtures import seekret, _seekret_run_profile, seekret_session, seekret_module
 from seekret.apitest.pytest_plugin.options import pytest_addoption
 
 
@@ -27,6 +27,7 @@ __all__ = [
     'seekret',
     '_seekret_run_profile',  # Required for registering the fixture.
     'seekret_session',
+    'seekret_module',
     'pytest_addhooks',
     'pytest_configure',
     'pytest_addoption'
