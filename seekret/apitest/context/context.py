@@ -55,7 +55,6 @@ class Context(object):
     This class is the interface from the test function to the Seekret testing infrastructure. It is intended to be used
     as a fixture and returned from the `seekret` and `seekret_module` fixtures.
     """
-
     def __init__(self, session: Session, scope: str):
         """
         Initialize the context.
@@ -88,14 +87,19 @@ class Context(object):
         else:
             prefix = self._scope.title() + ' '
 
-        logger.info(prefix + f'Test Stage #{self._current_stage_index}: {method} {path}')
+        logger.info(
+            prefix +
+            f'Test Stage #{self._current_stage_index}: {method} {path}')
         try:
             yield _StageWrapper(self, method, path)
         finally:
             self._current_stage_index += 1
 
     def request(self, *args, user: User = NOT_SET, **kwargs):
-        return self.session.request(*args, user=(self.default_user if user is NOT_SET else user), **kwargs)
+        return self.session.request(
+            *args,
+            user=(self.default_user if user is NOT_SET else user),
+            **kwargs)
 
 
 class _StageWrapper(object):
