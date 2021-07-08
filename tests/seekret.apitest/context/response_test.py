@@ -39,7 +39,8 @@ class TestResponseWrapper:
 
         def test_json_case_sensitive(self):
             wrapper = make_wrapper({'caseSensitiveKey': 1})
-            pytest.raises(NullResultError, wrapper.search, 'json.casesensitivekey')
+            pytest.raises(NullResultError, wrapper.search,
+                          'json.casesensitivekey')
 
         def test_headers_existing_key(self):
             wrapper = make_wrapper(headers={'Some-Header': 'value'})
@@ -51,7 +52,8 @@ class TestResponseWrapper:
 
         def test_headers_missing_key_causes_null_result_error(self):
             wrapper = make_wrapper(headers={'Some-Header': 'value'})
-            pytest.raises(NullResultError, wrapper.search, 'headers."other-header"')
+            pytest.raises(NullResultError, wrapper.search,
+                          'headers."other-header"')
 
         def test_bad_locator_causes_null_result_error(self):
             wrapper = make_wrapper(json={'a': 1}, headers={'b': 2})

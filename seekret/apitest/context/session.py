@@ -109,8 +109,14 @@ class Session(object):
         :return: Wrapped response object.
         """
 
-        prepared_request = self._prepare_request(method, path, json=json, path_params=path_params, query=query,
-                                                 headers=headers, cookies=cookies, user=user)
+        prepared_request = self._prepare_request(method,
+                                                 path,
+                                                 json=json,
+                                                 path_params=path_params,
+                                                 query=query,
+                                                 headers=headers,
+                                                 cookies=cookies,
+                                                 user=user)
 
         def _prettify(v):
             if isinstance(v, CaseInsensitiveDict):
@@ -160,4 +166,5 @@ class Session(object):
                                 json=json,
                                 params=query,
                                 cookies=cookies,
-                                auth=user and self._auth_handler(user)).prepare()
+                                auth=user
+                                and self._auth_handler(user)).prepare()
