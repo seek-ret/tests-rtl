@@ -5,10 +5,19 @@ import pykwalify.core
 import requests
 
 
+class NullResultError(RuntimeError):
+    """
+    Raised when `response.search` results in a 'null' JSON value, which is the case when a JMESPath
+    expression does not find a matching value.
+    """
+    pass
+
+
 class ResponseWrapper(object):
     """
     Wrapper for `requests.Response` that extends the response with extra functionality.
     """
+
     def __init__(self, response: requests.Response):
         """
         Wrap the given response.
@@ -35,10 +44,14 @@ class ResponseWrapper(object):
                            Available root keys are "json" or "headers".
         """
 
-        return jmespath.search(expression, {
+        value = jmespath.search(expression, {
             'json': self.json(),
             'headers': self.headers
         })
+        if value is None:
+            raise NullResultError(f'searching response for expression {expression} resulted in null')
+
+        return value
 
     def assert_schema(self, schema):
         try:
