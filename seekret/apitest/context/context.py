@@ -14,7 +14,6 @@ class ModuleContext(object):
     This class is the interface from module-scoped fixtures to the Seekret testing infrastructure. It is intended to be
     used as a fixture and returned from the `seekret_module` fixture.
     """
-
     def __init__(self, session: Session):
         self.session = session
 
@@ -32,7 +31,9 @@ class ModuleContext(object):
         :return: Callable value for performing requests to the target endpoint.
         """
 
-        logger.info(f'Module Global Stage #{self._current_stage_index}: {method} {path}')
+        logger.info(
+            f'Module Global Stage #{self._current_stage_index}: {method} {path}'
+        )
         try:
             yield _StageWrapper(self, method, path)
         finally:
@@ -49,7 +50,6 @@ class Context(object):
     This class is the interface from the test function to the Seekret testing infrastructure. It is intended to be used
     as a fixture and returned from the `seekret` fixture.
     """
-
     def __init__(self, session: Session):
         self.session = session
 
@@ -67,7 +67,8 @@ class Context(object):
         :return: Callable value for performing requests to the target endpoint.
         """
 
-        logger.info(f'Test Stage #{self._current_stage_index}: {method} {path}')
+        logger.info(
+            f'Test Stage #{self._current_stage_index}: {method} {path}')
         try:
             yield _StageWrapper(self, method, path)
         finally:

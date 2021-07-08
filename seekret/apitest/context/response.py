@@ -1,4 +1,5 @@
 import io
+import json
 
 import jmespath
 import pykwalify.core
@@ -35,12 +36,22 @@ class ResponseWrapper(object):
                            Available root keys are "json" or "headers".
         """
 
-        return jmespath.search(expression, {
-            'json': self.json(),
-            'headers': self.headers
-        })
+        search_data = {'headers': self.headers}
 
-    def assert_schema(self, schema):
+        try:
+            search_data['json'] = self.json()
+        except json.JSONDecodeError:
+            pass
+
+        return jmespath.search(expression, search_data)
+
+    def assert_schema(self, schema: str):
+        """
+        Assert that the schema of the response body matches the given PyKwalify schema.
+
+        :param schema: YAML representation of the PyKwalify schema.
+        :raises AssertionError: Schema validation failed.
+        """
         try:
             pykwalify.core.Core(
                 source_data=self.json(),
