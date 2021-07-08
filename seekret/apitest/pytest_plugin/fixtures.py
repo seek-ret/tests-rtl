@@ -1,4 +1,5 @@
 import pytest
+from _pytest.mark import Mark
 
 from seekret.apitest.context import Context, ModuleContext
 from seekret.apitest.context.session import Session
@@ -32,10 +33,25 @@ def seekret_module(seekret_session) -> ModuleContext:
     return ModuleContext(session=seekret_session)
 
 
+@pytest.fixture(scope='module')
+def seekret_module(seekret_session, request) -> Context:
+    """
+    Seekret test module object.
+    """
+
+    return Context(session=seekret_session, scope=request.scope)
+
+
 @pytest.fixture
-def seekret(seekret_session) -> Context:
+def seekret(seekret_session, request) -> Context:
     """
     Seekret context and functions.
     """
 
-    return Context(session=seekret_session)
+    context = Context(session=seekret_session, scope=request.scope)
+
+    default_user: Mark = request.node.get_closest_marker('default_user')
+    if default_user is not None:
+        context.default_user = default_user.args[0]
+
+    return context
