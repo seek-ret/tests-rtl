@@ -1,4 +1,5 @@
 import io
+import json
 
 import jmespath
 import pykwalify.core
@@ -17,7 +18,6 @@ class ResponseWrapper(object):
     """
     Wrapper for `requests.Response` that extends the response with extra functionality.
     """
-
     def __init__(self, response: requests.Response):
         """
         Wrap the given response.
@@ -44,16 +44,28 @@ class ResponseWrapper(object):
                            Available root keys are "json" or "headers".
         """
 
-        value = jmespath.search(expression, {
-            'json': self.json(),
-            'headers': self.headers
-        })
+        search_data = {'headers': self.headers}
+
+        try:
+            search_data['json'] = self.json()
+        except json.JSONDecodeError:
+            pass
+
+        value = jmespath.search(expression, search_data)
         if value is None:
-            raise NullResultError(f'searching response for expression {expression} resulted in null')
+            raise NullResultError(
+                f'searching response for expression {expression} resulted in null'
+            )
 
         return value
 
-    def assert_schema(self, schema):
+    def assert_schema(self, schema: str):
+        """
+        Assert that the schema of the response body matches the given PyKwalify schema.
+
+        :param schema: YAML representation of the PyKwalify schema.
+        :raises AssertionError: Schema validation failed.
+        """
         try:
             pykwalify.core.Core(
                 source_data=self.json(),

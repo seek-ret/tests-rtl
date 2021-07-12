@@ -1,9 +1,10 @@
+import json as _json
 import logging
 import re
 import urllib.parse
+from collections.abc import Mapping
 from typing import Optional, Any
 
-import json as _json
 import requests
 from requests.structures import CaseInsensitiveDict
 
@@ -11,7 +12,7 @@ from seekret.apitest.auth import create_auth
 from seekret.apitest.context.response import ResponseWrapper
 from seekret.apitest.runprofile import RunProfile
 
-PATH_PARAMETER_PLACEHOLDER_PATTERN = re.compile(r'{(?P<placeholder>[^{}]+)}')
+PATH_PARAMETER_PLACEHOLDER_PATTERN = re.compile(r'{(?P<param_name>[^{}]+)}')
 
 logger = logging.getLogger(__name__)
 
@@ -38,14 +39,26 @@ def resolve_path_params(path: str, path_params: dict[str, Any]):
     :raises ValueError: Some keys of the given path parameters do not appear as placeholders in the path.
     """
 
+    consumed_params = set()
+
+    def substitute_handler(match: re.Match):
+        param_name = match.group('param_name')
+        consumed_params.add(param_name)
+
+        # safe defaults to the "/" character, which we need to escape.
+        return urllib.parse.quote(str(path_params[param_name]), safe='')
+
     try:
-        resolved = PATH_PARAMETER_PLACEHOLDER_PATTERN.sub(lambda m: path_params.pop(m.group('placeholder')), path)
+        resolved = PATH_PARAMETER_PLACEHOLDER_PATTERN.sub(
+            substitute_handler, path)
     except KeyError as e:
         raise ValueError(f'expected path param {e} was not given') from e
 
-    # Because the substitute uses `pop`, all of the remaining path params were not used.
-    if path_params:
-        raise ValueError(f'path params given but do not appear in path: {", ".join(path_params.keys())}')
+    unused_params = path_params.keys() - consumed_params
+    if unused_params:
+        raise ValueError(
+            f'path params given but do not appear in path: {", ".join(unused_params)}'
+        )
 
     return resolved
 
@@ -77,7 +90,7 @@ class Session(object):
                 *,
                 path_params: Optional[dict[str, Any]] = None,
                 query: Optional[dict[str, Any]] = None,
-                headers: Optional[CaseInsensitiveDict[str, Any]] = None,
+                headers: Optional[Mapping[str, Any]] = None,
                 cookies: Optional[dict[str, Any]] = None,
                 user: Optional[str] = None):
         """
@@ -96,25 +109,22 @@ class Session(object):
         :return: Wrapped response object.
         """
 
-        path = resolve_path_params(path, path_params)
-
-        # Strip "/" at the start of the path to avoid "//" replacing the host part.
-        url = urllib.parse.urljoin(self.run_profile.target_server, path.lstrip('/'))
-
-        prepared_request = requests.Request(method=method,
-                                            url=url,
-                                            headers=headers,
-                                            json=json,
-                                            params=query,
-                                            cookies=cookies,
-                                            auth=user and self._auth_handler(user)).prepare()
+        prepared_request = self._prepare_request(method,
+                                                 path,
+                                                 json=json,
+                                                 path_params=path_params,
+                                                 query=query,
+                                                 headers=headers,
+                                                 cookies=cookies,
+                                                 user=user)
 
         def _prettify(v):
             if isinstance(v, CaseInsensitiveDict):
                 v = dict(v.items())  # Use `v.items()` to preserve case.
 
             indentation = ' ' * 6  # Match indentation of titles.
-            return indentation.join(_json.dumps(v, indent=2).splitlines(keepends=True))
+            return indentation.join(
+                _json.dumps(v, indent=2).splitlines(keepends=True))
 
         _log_and_print(logging.INFO, f'--> {method} {prepared_request.url}')
         print(f'      headers: {_prettify(prepared_request.headers)}')
@@ -123,7 +133,10 @@ class Session(object):
         with requests.Session() as session:
             response = session.send(prepared_request)
 
-        _log_and_print(logging.INFO, f'<-- {response.status_code} {response.reason} from {method} {response.url}')
+        _log_and_print(
+            logging.INFO,
+            f'<-- {response.status_code} {response.reason} from {method} {response.url}'
+        )
         print(f'      headers: {_prettify(response.headers)}')
         try:
             body = _prettify(response.json())
@@ -132,3 +145,26 @@ class Session(object):
         print(f'      body: {body}')
 
         return ResponseWrapper(response)
+
+    def _prepare_request(self,
+                         method: str,
+                         path: str,
+                         json: Optional[Any] = None,
+                         *,
+                         path_params: Optional[dict[str, Any]] = None,
+                         query: Optional[dict[str, Any]] = None,
+                         headers: Optional[Mapping[str, Any]] = None,
+                         cookies: Optional[dict[str, Any]] = None,
+                         user: Optional[str] = None):
+        path = resolve_path_params(path, path_params or {})
+        # Strip "/" at the start of the path to avoid "//" replacing the host part.
+        url = urllib.parse.urljoin(self.run_profile.target_server,
+                                   path.lstrip('/'))
+        return requests.Request(method=method,
+                                url=url,
+                                headers=headers,
+                                json=json,
+                                params=query,
+                                cookies=cookies,
+                                auth=user
+                                and self._auth_handler(user)).prepare()

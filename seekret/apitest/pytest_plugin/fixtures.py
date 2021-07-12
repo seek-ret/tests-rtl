@@ -24,6 +24,7 @@ def seekret_session(_seekret_run_profile, pytestconfig) -> Session:
     pytestconfig.hook.pytest_seekret_session_initialized(session=session)
     return session
 
+
 @pytest.fixture(scope='module')
 def seekret_module(seekret_session) -> ModuleContext:
     """
