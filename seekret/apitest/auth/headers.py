@@ -1,17 +1,16 @@
-from box import Box
+from typing import Any
 
-from seekret.apitest.auth.base import AuthMethod
+from requests import PreparedRequest
+from requests.auth import AuthBase
+
+from seekret.apitest.auth.factory import auth_method_factory
 
 
-class HeadersAuth(AuthMethod):
-    IDENTIFIER = 'header'
+@auth_method_factory(type_name='header')
+class HeadersAuth(AuthBase):
+    def __init__(self, data: dict[str, Any]):
+        self.headers = data
 
-    def on_test_start(self, test_data: Box, variables: Box, auth_data: Box):
-        variables.merge_update(
-            {'seekret-runtime': {
-                'v1': {
-                    'auth': {
-                        'headers': auth_data
-                    }
-                }
-            }})
+    def __call__(self, request: PreparedRequest) -> PreparedRequest:
+        request.headers.update(self.headers)
+        return request
