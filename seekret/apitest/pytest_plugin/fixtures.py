@@ -1,7 +1,7 @@
 import pytest
 from _pytest.mark import Mark
 
-from seekret.apitest.context import Context, ModuleContext
+from seekret.apitest.context import Context
 from seekret.apitest.context.session import Session
 from seekret.apitest.runprofile import RunProfile
 
@@ -23,15 +23,6 @@ def seekret_session(_seekret_run_profile, pytestconfig) -> Session:
     session = Session(_seekret_run_profile)
     pytestconfig.hook.pytest_seekret_session_initialized(session=session)
     return session
-
-
-@pytest.fixture(scope='module')
-def seekret_module(seekret_session) -> ModuleContext:
-    """
-    Seekret test module object.
-    """
-
-    return ModuleContext(session=seekret_session)
 
 
 @pytest.fixture(scope='module')
