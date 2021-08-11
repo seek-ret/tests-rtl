@@ -160,6 +160,8 @@ class Session(object):
         # Strip "/" at the start of the path to avoid "//" replacing the host part.
         url = urllib.parse.urljoin(self.run_profile.target_server,
                                    path.lstrip('/'))
+        headers = headers or dict()
+        headers["Seekret-Test"] = 1
         return requests.Request(method=method,
                                 url=url,
                                 headers=headers,
